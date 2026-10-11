@@ -32,11 +32,53 @@ struct FlightInfo* CreateNewFlight(char* destination, char* date, double fare)
     return newFlight;
 }
 
+void insertFareSorted(struct FlightInfo** head, struct FlightInfo** tail, char* destination, char* date, double fare)
+{
+    struct FlightInfo* newFlight = CreateNewFlight(destination, date, fare);
+
+    // Empty list, will be both head and tail
+    if (*head == NULL)
+    {
+        *tail = newFlight;
+        *head = newFlight;
+    }
+}
+
+void insertDestinationSorted(struct FlightInfo** head, struct FlightInfo** tail, char* destination, char* date, double fare)
+{
+    struct FlightInfo* newFlight = CreateNewFlight(destination, date, fare);
+}
+
+void printSortedFare(struct FlightInfo* head)
+{
+    struct FlightInfo* current = head;
+    while (current != NULL)
+    {
+        printf("infoDisplay\n");
+        current = current->NextFlightByFare;
+    }
+}
+
+void printSortedDestination(struct FlightInfo* head)
+{
+    struct FlightInfo* current = head;
+    while (current != NULL)
+    {
+        printf("infoDisplay\n");
+        current = current->NextFlightByDestination;
+    }
+}
+
+void deleteflight()
+{
+
+}
+
 int main()
 {
     struct FlightInfo* headByDestination = NULL;
-    struct FlightInfo* tailByDestination = NULL;
+    // struct FlightInfo* tailByDestination = NULL;
 
     struct FlightInfo* headByFare = NULL;
-    struct FlightInfo* tailByFare = NULL;
+    // struct FlightInfo* tailByFare = NULL;
 }
