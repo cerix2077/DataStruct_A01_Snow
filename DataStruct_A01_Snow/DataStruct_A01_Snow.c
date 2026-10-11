@@ -1,15 +1,18 @@
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 
 struct FlightInfo
 {
     char Destination[15];
     char Date[9];
-    float Fare;
+    double Fare;
 
-    // Fare sorted odubly linked list
+    // Fare sorted doubly linked list
     struct FlightInfo* PreviousFlightByFare ;
     struct FlightInfo* NextFlightByFare;
 
@@ -18,23 +21,36 @@ struct FlightInfo
     struct FlightInfo* NextFlightByDestination;
 };
 
-struct FlightInfo* CreateNewFlight(char* destination, char* date, float fare)
+struct FlightInfo* createNewFlight(char* destination, char* date, double fare)
 {
     struct FlightInfo* newFlight = (struct FlightInfo*)malloc(sizeof(struct FlightInfo));
 
-    if (newFlight == NULL)
+    // on failure to allocate new struct
+    if (newFlight == NULL) 
     {
         exit(EXIT_FAILURE);
     }
+
+    //
     strcpy(newFlight->Destination, destination);
     strcpy(newFlight->Date, date);
     newFlight->Fare = fare;
+
+    // explicitly init links as NULL to protect from undefined behavior
+    newFlight->NextFlightByFare = NULL;
+    newFlight->PreviousFlightByFare = NULL;
+
+    newFlight->NextFlightByDestination = NULL;
+    newFlight->PreviousFlightByDestination = NULL;
+
+
+
     return newFlight;
 }
 
-void insertFareSorted(struct FlightInfo** head, struct FlightInfo** tail, char* destination, char* date, float fare)
+void insertFareSorted(struct FlightInfo** head, struct FlightInfo** tail, char* destination, char* date, double fare)
 {
-    struct FlightInfo* newFlight = CreateNewFlight(destination, date, fare);
+    struct FlightInfo* newFlight = createNewFlight(destination, date, fare);
 
     // Empty list, newFlight is both head and tail
     if (*head == NULL)
@@ -57,8 +73,10 @@ void insertFareSorted(struct FlightInfo** head, struct FlightInfo** tail, char* 
     if (fare >= (*tail)->Fare)
     {
         newFlight->PreviousFlightByFare = *tail; // new tail links old tail as prev
+        newFlight->NextFlightByFare = NULL; // this flight is the end of the list 
         (*tail)->NextFlightByFare = newFlight; // old tail links new tail as next
         *tail = newFlight; // new flight is now tail
+        return;
     }
 
     // newFlight was not smallest or largest in list, 
@@ -78,9 +96,9 @@ void insertFareSorted(struct FlightInfo** head, struct FlightInfo** tail, char* 
     current->PreviousFlightByFare = newFlight; // current links newFlight as previous
 }
 
-void insertDestinationSorted(struct FlightInfo** head, struct FlightInfo** tail, char* destination, char* date, float fare)
+void insertDestinationSorted(struct FlightInfo** head, struct FlightInfo** tail, char* destination, char* date, double fare)
 {
-    struct FlightInfo* newFlight = CreateNewFlight(destination, date, fare);
+    struct FlightInfo* newFlight = createNewFlight(destination, date, fare);
 
     // Empty list, will be both head and tail
     if (*head == NULL)
@@ -89,6 +107,40 @@ void insertDestinationSorted(struct FlightInfo** head, struct FlightInfo** tail,
         *head = newFlight;
         return;
     }
+
+    // if destinations are identical or newFlights destination has a smaller value character in its first diff
+    if (strcmp(newFlight->Destination, (*head)->Destination) <= 0)
+    {
+        newFlight->NextFlightByDestination = *head; // newFlight links next to current head
+        (*head)->PreviousFlightByDestination = newFlight; // current head links prev to newFlight
+        *head = newFlight; // newflight is now head 
+        return;
+    }
+
+    // if new destination compares as after tail destination
+    if (strcmp(newFlight->Destination, (*tail)->Destination) > 0)
+    {
+        newFlight->PreviousFlightByDestination = tail;
+        newFlight->NextFlightByDestination = NULL;
+        (*tail)->NextFlightByDestination = newFlight;
+        *tail = newFlight;
+        return;
+    }
+
+    struct FlightInfo* current = (*head)->NextFlightByDestination;
+
+    // 
+    while (current->NextFlightByDestination != NULL && strcmp(newFlight->Destination, current->Destination) > 0)
+    {
+        current = current->NextFlightByDestination;
+    }
+
+    newFlight->NextFlightByFare = current->NextFlightByDestination; // newFlights next is now current
+    newFlight->PreviousFlightByFare = current; // newFlights prev is now currents prev
+
+    //current->NextFlightByFare = newFlight; // does next flight need to be updated if we are inserting before?
+    current->PreviousFlightByFare = newFlight; // current links newFlight as previous
+
 }
 
 void printSortedFare(struct FlightInfo* head)
@@ -96,7 +148,7 @@ void printSortedFare(struct FlightInfo* head)
     struct FlightInfo* current = head;
     while (current != NULL)
     {
-        printf("infoDisplay\n");
+        printf("Destination: %s, Date: %s, Fare: $%.2f\n", current->Destination, current->Date, current->Fare);
         current = current->NextFlightByFare;
     }
 }
@@ -123,9 +175,20 @@ void deleteflight()
 
 int main()
 {
+
+    // init heads and tails for fare and destination sorted lists
     struct FlightInfo* headByDestination = NULL;
-    // struct FlightInfo* tailByDestination = NULL;
+    struct FlightInfo* tailByDestination = NULL;
 
     struct FlightInfo* headByFare = NULL;
-    // struct FlightInfo* tailByFare = NULL;
+    struct FlightInfo* tailByFare = NULL;
+
+    insertFareSorted(&headByFare, &tailByFare, "Kitchener\0", "10212026\0", 356.67);
+    insertFareSorted(&headByFare, &tailByFare, "Bancroft\0", "10212026\0", 350.00);
+    insertFareSorted(&headByFare, &tailByFare, "Ottowa\0", "10212026\0", 246.93);
+    insertFareSorted(&headByFare, &tailByFare, "Toronto\0", "10212026\0", 496.67);
+    insertFareSorted(&headByFare, &tailByFare, "Quebec\0", "10212026\0", 160.67);
+
+
+    printSortedFare(headByFare);
 }

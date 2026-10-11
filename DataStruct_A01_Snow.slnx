@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="DataStruct_A01_Snow/DataStruct_A01_Snow.vcxproj" />
+  <Project Path="DataStruct_A01_Snow/DataStruct_A01_Snow.vcxproj" Id="b4f14bfe-9d96-4f05-a7ce-0fd3fdf22cbe" />
 </Solution>
