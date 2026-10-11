@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="DataStruct_A01_Snow/DataStruct_A01_Snow.vcxproj" />
+</Solution>
