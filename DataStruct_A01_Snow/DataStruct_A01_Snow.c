@@ -112,21 +112,21 @@ void insertDualSorted(struct FlightInfo** headByFare, struct FlightInfo** tailBy
     }
     else
     {
-    // newFlight was not smallest or largest in list, 
-    // make current struct to navigate though list
-    struct FlightInfo* currentByFare = (*headByFare)->NextFlightByFare; // head was already compared, start at next
+        // newFlight was not smallest or largest in list, 
+        // make current struct to navigate though list
+        struct FlightInfo* currentByFare = (*headByFare)->NextFlightByFare; // head was already compared, start at next
 
-    // while the currently checked flight is not null and currents fare is less than the new fare
-    while (currentByFare != NULL && currentByFare->Fare < fare)
-    {
-        currentByFare = currentByFare->NextFlightByFare; // step through list
-    }
+        // while the currently checked flight is not null and currents fare is less than the new fare
+        while (currentByFare != NULL && currentByFare->Fare < fare)
+        {
+            currentByFare = currentByFare->NextFlightByFare; // step through list
+        }
 
-    newFlight->NextFlightByFare = currentByFare; // newFlights next is now current
-    newFlight->PreviousFlightByFare = currentByFare->PreviousFlightByFare; // newFlights prev is now currents prev
+        newFlight->NextFlightByFare = currentByFare; // newFlights next is now current
+        newFlight->PreviousFlightByFare = currentByFare->PreviousFlightByFare; // newFlights prev is now currents prev
 
-    //current->NextFlightByFare = newFlight; // does next flight need to be updated if we are inserting before?
-    currentByFare->PreviousFlightByFare = newFlight; // current links newFlight as previous
+        currentByFare->PreviousFlightByFare->NextFlightByFare = newFlight;
+        currentByFare->PreviousFlightByFare = newFlight; // current links newFlight as previous
 
     }
 
@@ -149,26 +149,26 @@ void insertDualSorted(struct FlightInfo** headByFare, struct FlightInfo** tailBy
     // if new destination compares as after tail destination
     else if (strcmp(destination, (*tailByDestination)->Destination) > 0)
     {
-        newFlight->PreviousFlightByDestination = tailByDestination;
+        newFlight->PreviousFlightByDestination = *tailByDestination;
         newFlight->NextFlightByDestination = NULL;
         (*tailByDestination)->NextFlightByDestination = newFlight;
         *tailByDestination = newFlight;
     }
-    else
+    else //check logic, was missing input
     {
-    struct FlightInfo* currentByDestination = (*headByDestination)->NextFlightByDestination;
+        struct FlightInfo* currentByDestination = (*headByDestination)->NextFlightByDestination;
 
-    // 
-    while (currentByDestination->NextFlightByDestination != NULL && strcmp(destination, currentByDestination->Destination) > 0)
-    {
-        currentByDestination = currentByDestination->NextFlightByDestination;
-    }
+        // 
+        while (currentByDestination->NextFlightByDestination != NULL && strcmp(destination, currentByDestination->Destination) > 0) // is destination "larger" t
+        {
+            currentByDestination = currentByDestination->NextFlightByDestination;
+        }
 
-    newFlight->NextFlightByDestination = currentByDestination->NextFlightByDestination; // newFlights next is now current
-    newFlight->PreviousFlightByDestination = currentByDestination; // newFlights prev is now currents prev
+        newFlight->NextFlightByDestination = currentByDestination; // newFlights next is now current
+        newFlight->PreviousFlightByDestination = currentByDestination->PreviousFlightByDestination; // newFlights prev is now currents prev
 
-    //current->NextFlightByFare = newFlight; // does next flight need to be updated if we are inserting before?
-    currentByDestination->PreviousFlightByDestination = newFlight; // current links newFlight as previous
+        currentByDestination->PreviousFlightByDestination->NextFlightByDestination = newFlight;
+        currentByDestination->PreviousFlightByDestination = newFlight; // current links newFlight as previous
     }
 
 }
