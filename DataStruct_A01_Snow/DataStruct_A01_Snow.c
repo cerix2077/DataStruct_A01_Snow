@@ -1,4 +1,13 @@
-
+/*
+ * FILE             :Assignment 1
+ * PROGRAMMER       : Cameron Snow
+ * FIRST VERSION    : 2026-10-10
+ * DESCRIPTION      :
+ *      This program promts the user for inupt before constructing 
+ *          2 doubly linkd lists sorted by destination and fare respectivly,
+ *          prints out the list sorted by fare  then destination, askes user for 
+ *          a destination and date pair to change the fare of then redisplaying the lists
+ */
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <stdio.h>
@@ -21,6 +30,17 @@ struct FlightInfo
     struct FlightInfo* NextFlightByDestination;
 };
 
+/*
+* METHOD       : createNewFlight
+* DESCRIPTION  :
+*     gets a string of the member name, formatted as "Lastname, Firstname"
+* PARAMETERS   :
+*   char* destination    : destination to be added
+*   char* date           : date to be added
+*   double fare          : fare to be added
+* RETURNS      :
+*   struct FlightInfo    : the FlightStruct with all variables set
+*/
 struct FlightInfo* createNewFlight(char* destination, char* date, double fare)
 {
     struct FlightInfo* newFlight = (struct FlightInfo*)malloc(sizeof(struct FlightInfo));
@@ -48,6 +68,22 @@ struct FlightInfo* createNewFlight(char* destination, char* date, double fare)
     return newFlight;
 }
 
+/*
+* METHOD       : insertDualSorted
+* DESCRIPTION  :
+*   takes in current list heds and tails as well as data points to be stored in struct 
+*        then links the a nerw struct into the doubly linked lists
+* PARAMETERS   :
+*   struct FlightInfo** headByFare           : head of list by fare
+*   struct FlightInfo** tailByFare           : tail of list by fare
+*   struct FlightInfo** headByDestination    : head of list by destination
+*   struct FlightInfo** tailByDestination    : tail of list by destination
+*   char* destination                        : destination to be added
+*   char* date                               : date to be added
+*   double fare                              : fare to be added
+* RETURNS      :
+*   N/A
+*/
 void insertDualSorted(struct FlightInfo** headByFare, struct FlightInfo** tailByFare, struct FlightInfo** headByDestination, struct FlightInfo** tailByDestination, char* destination, char* date, double fare)
 {
     struct FlightInfo* newFlight = createNewFlight(destination, date, fare);
@@ -137,7 +173,18 @@ void insertDualSorted(struct FlightInfo** headByFare, struct FlightInfo** tailBy
 
 }
 
-char* nullTerminate(char* buffer, size_t bufferSize)
+/*
+* METHOD       : nullTerminate
+* DESCRIPTION  :
+*     gets user input, adds or replaces end of string with a null terminator, then
+*     sanitises stdin buffer of any unhandled characters
+* PARAMETERS   :
+*   char* buffer         : character array to be collected and mutated within the function
+*   size_t bufferSize    : size of the character array
+* RETURNS      :
+*   struct FlightInfo    : the FlightStruct with all variables set
+*/
+void nullTerminate(char* buffer, size_t bufferSize)
 {
     if (fgets(buffer, bufferSize, stdin) == NULL)
     {
@@ -156,33 +203,73 @@ char* nullTerminate(char* buffer, size_t bufferSize)
     }
 }
 
+/*
+* METHOD       : printSortedFare
+* DESCRIPTION  :
+*     
+* PARAMETERS   :
+*   
+* RETURNS      :
+*   
+*/
 void printSortedFare(struct FlightInfo* head)
 {
+    printf("\nDEBUG BY FARE\n");
     struct FlightInfo* current = head;
     while (current != NULL)
     {
-        printf("DEBUG BY FARE\n");
         printf("Destination: %s, Date: %s, Fare: $%.2f\n", current->Destination, current->Date, current->Fare);
         current = current->NextFlightByFare;
     }
 }
 
+/*
+* METHOD       : printSortedDestination
+* DESCRIPTION  :
+*     
+* PARAMETERS   :
+*   
+* RETURNS      :
+*   
+*/
 void printSortedDestination(struct FlightInfo* head)
 {
+    printf("\nDEBUG BY DEST\n");
     struct FlightInfo* current = head;
     while (current != NULL)
     {
-        printf("DEBUG BY DEST\n");
         printf("Destination: %s, Date: %s, Fare: $%.2f\n", current->Destination, current->Date, current->Fare);
         current = current->NextFlightByDestination;
     }
 }
 
+/*
+* METHOD       : findFlight
+* DESCRIPTION  :
+*
+* PARAMETERS   :
+*
+* RETURNS      :
+*
+*/
 struct FlightInfo* findFlight(struct FlightInfo* head, char* destination, char* date)
 {
-
+    while (head != NULL && (strcmp(head->Destination, destination) != 0 && strcmp(head->Date, date) != 0))
+    {
+        printf("not this fella\n");
+    }
+    printf("out\n");
 }
 
+/*
+* METHOD       : deleteflight
+* DESCRIPTION  :
+*
+* PARAMETERS   :
+*
+* RETURNS      :
+*
+*/
 void deleteflight()
 {
 
@@ -198,18 +285,11 @@ int main()
     struct FlightInfo* headByFare = NULL;
     struct FlightInfo* tailByFare = NULL;
 
-    //insertFareSorted(headByFare, tailByFare, "Kitchener\0", "10212026\0", 356.67);
-    //insertFareSorted(headByFare, tailByFare, "Ottowa\0", "10212026\0", 246.93);
-    //insertFareSorted(headByFare, tailByFare, "Bancroft\0", "10212026\0", 350.00);
-    //insertFareSorted(headByFare, tailByFare, "Toronto\0", "10212026\0", 496.67);
-    //insertFareSorted(headByFare, tailByFare, "Quebec\0", "10212026\0", 160.67);
-
     char newDestination[15];
     char newDate[9];
     char newFareString[10]; //should hold fares up to 999999.99\0
     double newFare;
     int collectionLoop = 1;
-    int clearInt; //used to clear buffer after reads
 
 
     while (collectionLoop == 1)
@@ -226,7 +306,7 @@ int main()
         nullTerminate(newFareString, sizeof(newFareString));
 
 
-        printf("DEBUG: %s, %s, %s", newDestination, newDate, newFareString);
+        printf("DEBUG: %s, %s, %s\n", newDestination, newDate, newFareString);
 
         // if dest and fare are not ".", insert into list
         if (strcmp(newDestination, ".") != 0 && strcmp(newFareString, ".") != 0)
@@ -235,19 +315,21 @@ int main()
             sscanf(newFareString, "%lf", &newFare);
             insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, newDestination, newDate, newFare);
         }
-        else
+        else // break from loop
         {
             collectionLoop = 0;
         }
     }
 
-    //insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Kitchener\0", "10212026\0", 356.67);
-    //insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Bancroft\0", "10212026\0", 350.00);
-    //insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Ottowa\0", "10212026\0", 246.93);
-    //insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Toronto\0", "10212026\0", 496.67);
-    //insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Quebec\0", "10212026\0", 160.67);
+    insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Kitchener\0", "10212026\0", 356.67);
+    insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Bancroft\0", "10212026\0", 350.00);
+    insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Ottowa\0", "10212026\0", 246.93);
+    insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Toronto\0", "10212026\0", 496.67);
+    insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Quebec\0", "10212026\0", 160.67);
 
     printSortedFare(headByFare);
 
     printSortedDestination(headByDestination);
+
+    //findFlight(headByDestination, newDestination, newDate);
 }
