@@ -254,7 +254,7 @@ void printSortedDestination(struct FlightInfo* head)
     }
 }
 
-struct FlightInfo* findFlight(struct FlightInfo* head)
+struct FlightInfo* findFlight(struct FlightInfo* head, char* destination, char* date)
 {
 
 }
@@ -279,6 +279,31 @@ int main()
     //insertFareSorted(headByFare, tailByFare, "Bancroft\0", "10212026\0", 350.00);
     //insertFareSorted(headByFare, tailByFare, "Toronto\0", "10212026\0", 496.67);
     //insertFareSorted(headByFare, tailByFare, "Quebec\0", "10212026\0", 160.67);
+
+    char newDestination[15];
+    char newDate[9];
+    char newFareString[10]; //should hold fares up to 999999.99\0
+    double newFare;
+    int collectionLoop = 1;
+
+
+    while (collectionLoop == 1)
+    {
+        fgets(newDestination, 15, stdin);
+        fgets(newDate, 9, stdin);
+        fgets(newFareString, 10, stdin);
+
+        // if dest and fare are not ".", insert into list
+        if (newDestination != "." && newFareString != ".")
+        {
+            sscanf(newFareString, "%lf", &newFare);
+            insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, newDestination, newDate, newFare);
+        }
+        else
+        {
+
+        }
+    }
 
     insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Kitchener\0", "10212026\0", 356.67);
     insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Bancroft\0", "10212026\0", 350.00);
