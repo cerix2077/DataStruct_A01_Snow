@@ -48,101 +48,6 @@ struct FlightInfo* createNewFlight(char* destination, char* date, double fare)
     return newFlight;
 }
 
-void insertFareSorted(struct FlightInfo** head, struct FlightInfo** tail, char* destination, char* date, double fare)
-{
-    struct FlightInfo* newFlight = createNewFlight(destination, date, fare);
-
-    // Empty list, newFlight is both head and tail
-    if (*head == NULL)
-    {
-        *tail = newFlight;
-        *head = newFlight;
-        return;
-    }
-
-    // new fare is smaller than heads fare, make new head
-    if (fare <= (*head)->Fare)
-    {
-        newFlight->NextFlightByFare = *head; // new head links old head as next
-        (*head)->PreviousFlightByFare = newFlight; //old head links new head as prev
-        *head = newFlight; // newFlight is now head
-        return;
-    }
-
-    // new fare is larger than tails fare, make new tail
-    if (fare >= (*tail)->Fare)
-    {
-        newFlight->PreviousFlightByFare = *tail; // new tail links old tail as prev
-        newFlight->NextFlightByFare = NULL; // this flight is the end of the list 
-        (*tail)->NextFlightByFare = newFlight; // old tail links new tail as next
-        *tail = newFlight; // new flight is now tail
-        return;
-    }
-
-    // newFlight was not smallest or largest in list, 
-    // make current struct to navigate though list
-    struct FlightInfo* current = (*head)->NextFlightByFare; // head was already compared, start at next
-
-    // while the currently checked flight is not null and currents fare is less than the new fare
-    while (current != NULL && current->Fare < fare)
-    {
-        current = current->NextFlightByFare; // step through list
-    }
-
-    newFlight->NextFlightByFare = current; // newFlights next is now current
-    newFlight->PreviousFlightByFare = current->PreviousFlightByFare; // newFlights prev is now currents prev
-
-    //current->NextFlightByFare = newFlight; // does next flight need to be updated if we are inserting before?
-    current->PreviousFlightByFare = newFlight; // current links newFlight as previous
-}
-
-void insertDestinationSorted(struct FlightInfo** head, struct FlightInfo** tail, char* destination, char* date, double fare)
-{
-    struct FlightInfo* newFlight = createNewFlight(destination, date, fare);
-
-    // Empty list, will be both head and tail
-    if (*head == NULL)
-    {
-        *tail = newFlight;
-        *head = newFlight;
-        return;
-    }
-
-    // if destinations are identical or newFlights destination has a smaller value character in its first diff
-    if (strcmp(newFlight->Destination, (*head)->Destination) <= 0)
-    {
-        newFlight->NextFlightByDestination = *head; // newFlight links next to current head
-        (*head)->PreviousFlightByDestination = newFlight; // current head links prev to newFlight
-        *head = newFlight; // newflight is now head 
-        return;
-    }
-
-    // if new destination compares as after tail destination
-    if (strcmp(newFlight->Destination, (*tail)->Destination) > 0)
-    {
-        newFlight->PreviousFlightByDestination = tail;
-        newFlight->NextFlightByDestination = NULL;
-        (*tail)->NextFlightByDestination = newFlight;
-        *tail = newFlight;
-        return;
-    }
-
-    struct FlightInfo* current = (*head)->NextFlightByDestination;
-
-    // 
-    while (current->NextFlightByDestination != NULL && strcmp(newFlight->Destination, current->Destination) > 0)
-    {
-        current = current->NextFlightByDestination;
-    }
-
-    newFlight->NextFlightByFare = current->NextFlightByDestination; // newFlights next is now current
-    newFlight->PreviousFlightByFare = current; // newFlights prev is now currents prev
-
-    //current->NextFlightByFare = newFlight; // does next flight need to be updated if we are inserting before?
-    current->PreviousFlightByFare = newFlight; // current links newFlight as previous
-
-}
-
 void insertDualSorted(struct FlightInfo** headByFare, struct FlightInfo** tailByFare, struct FlightInfo** headByDestination, struct FlightInfo** tailByDestination, char* destination, char* date, double fare)
 {
     struct FlightInfo* newFlight = createNewFlight(destination, date, fare);
@@ -232,6 +137,25 @@ void insertDualSorted(struct FlightInfo** headByFare, struct FlightInfo** tailBy
 
 }
 
+char* nullTerminate(char* buffer, size_t bufferSize)
+{
+    if (fgets(buffer, bufferSize, stdin) == NULL)
+    {
+        buffer[0] = '\0';
+    }
+
+    char* newLine = strchr(buffer, '\n');
+    if (newLine != NULL)
+        {
+        *newLine = '\0';
+        }
+    else
+    {
+        int charInt;
+        while ((charInt = getchar()) != '\n');
+    }
+}
+
 void printSortedFare(struct FlightInfo* head)
 {
     struct FlightInfo* current = head;
@@ -285,31 +209,43 @@ int main()
     char newFareString[10]; //should hold fares up to 999999.99\0
     double newFare;
     int collectionLoop = 1;
+    int clearInt; //used to clear buffer after reads
 
 
     while (collectionLoop == 1)
     {
-        fgets(newDestination, 15, stdin);
-        fgets(newDate, 9, stdin);
-        fgets(newFareString, 10, stdin);
+        printf("Enter destination:");
+        nullTerminate(newDestination, sizeof(newDestination));
+
+        
+        printf("Enter date:");
+        nullTerminate(newDate, sizeof(newDate));
+
+        
+        printf("Enter fare:");
+        nullTerminate(newFareString, sizeof(newFareString));
+
+
+        printf("DEBUG: %s, %s, %s", newDestination, newDate, newFareString);
 
         // if dest and fare are not ".", insert into list
-        if (newDestination != "." && newFareString != ".")
+        if (strcmp(newDestination, ".") != 0 && strcmp(newFareString, ".") != 0)
         {
+
             sscanf(newFareString, "%lf", &newFare);
             insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, newDestination, newDate, newFare);
         }
         else
         {
-
+            collectionLoop = 0;
         }
     }
 
-    insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Kitchener\0", "10212026\0", 356.67);
-    insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Bancroft\0", "10212026\0", 350.00);
-    insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Ottowa\0", "10212026\0", 246.93);
-    insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Toronto\0", "10212026\0", 496.67);
-    insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Quebec\0", "10212026\0", 160.67);
+    //insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Kitchener\0", "10212026\0", 356.67);
+    //insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Bancroft\0", "10212026\0", 350.00);
+    //insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Ottowa\0", "10212026\0", 246.93);
+    //insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Toronto\0", "10212026\0", 496.67);
+    //insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Quebec\0", "10212026\0", 160.67);
 
     printSortedFare(headByFare);
 
