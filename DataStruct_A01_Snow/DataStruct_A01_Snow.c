@@ -167,7 +167,7 @@ void insertDualSorted(struct FlightInfo** headByFare, struct FlightInfo** tailBy
         newFlight->NextFlightByDestination = currentByDestination; // newFlights next is now current
         newFlight->PreviousFlightByDestination = currentByDestination->PreviousFlightByDestination; // newFlights prev is now currents prev
 
-        currentByDestination->PreviousFlightByDestination->NextFlightByDestination = newFlight;
+        currentByDestination->PreviousFlightByDestination->NextFlightByDestination = newFlight; // current's prev's next points to newFlight
         currentByDestination->PreviousFlightByDestination = newFlight; // current links newFlight as previous
     }
 
@@ -206,11 +206,11 @@ void nullTerminate(char* buffer, size_t bufferSize)
 /*
 * METHOD       : printSortedFare
 * DESCRIPTION  :
-*     
+*     prints the fare sorted list
 * PARAMETERS   :
-*   
+*   struct FlightInfo* head :
 * RETURNS      :
-*   
+*   N/A
 */
 void printSortedFare(struct FlightInfo* head)
 {
@@ -226,11 +226,11 @@ void printSortedFare(struct FlightInfo* head)
 /*
 * METHOD       : printSortedDestination
 * DESCRIPTION  :
-*     
+*     prints the destination sorted list
 * PARAMETERS   :
-*   
+*   struct FlightInfo* head : The head to start the listing process with
 * RETURNS      :
-*   
+*   N/A
 */
 void printSortedDestination(struct FlightInfo* head)
 {
@@ -246,33 +246,57 @@ void printSortedDestination(struct FlightInfo* head)
 /*
 * METHOD       : findFlight
 * DESCRIPTION  :
-*
+*   looks for a flight matching both the destination and date input, sorts
 * PARAMETERS   :
-*
+*   struct FlightInfo* head     : head to start the search from
+*   char* destination           : the destination to comapre againt the list item
+*   char* date                  : the date to compare agains the list item
 * RETURNS      :
-*
+*   struct FlightInfo* current  : the matching flight, NULL if no match
 */
-struct FlightInfo* findFlight(struct FlightInfo* head, char* destination, char* date)
+struct FlightInfo* findFlight(struct FlightInfo* headByDestination, char* destination, char* date)
 {
-    while (head != NULL && (strcmp(head->Destination, destination) != 0 && strcmp(head->Date, date) != 0))
+    struct FlightInfo* current = headByDestination;
+    while (current != NULL)
     {
-        printf("not this fella\n");
+        if (strcmp(current->Destination, destination) == 0 && strcmp(current->Date, date) == 0) // check for both fields to match
+        {
+            return current;
+        }
+        current = current->NextFlightByDestination;
     }
-    printf("out\n");
+    return NULL;
 }
 
 /*
-* METHOD       : deleteflight
+* METHOD       : deleteFlight
 * DESCRIPTION  :
-*
+*    takes flight found in findFlight and removes it from the lists, relinking the previous and next 
 * PARAMETERS   :
-*
+*   struct FlightInfo** headByFare           : head of list by fare
+*   struct FlightInfo** tailByFare           : tail of list by fare
+*   struct FlightInfo** headByDestination    : head of list by destination
+*   struct FlightInfo** tailByDestination    : tail of list by destination
+*   struct FlightInfo*  targetFlight         : target in list to be removed
 * RETURNS      :
-*
+*   N/A
 */
-void deleteflight()
+void deleteFlight(struct FlightInfo** headByFare, struct FlightInfo** tailByFare, struct FlightInfo** headByDesination, struct FlightInfo** tailByDestination, struct FlightInfo* targetFlight)
 {
+    if (targetFlight == NULL) // no match found, exit function
+    {
+        return;
+    }
 
+    // relink fare list =========
+    if (targetFlight->PreviousFlightByFare != NULL) // target was not head, must relink previous to next
+    {
+        targetFlight->PreviousFlightByFare->NextFlightByFare = targetFlight->NextFlightByFare;
+    }
+    else // target was head and head must be reassigned
+    {
+        *headByFare = targetFlight->NextFlightByFare;
+    }
 }
 
 int main()
@@ -331,5 +355,5 @@ int main()
 
     printSortedDestination(headByDestination);
 
-    //findFlight(headByDestination, newDestination, newDate);
+    findFlight(headByDestination, newDestination, newDate);
 }
