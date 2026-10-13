@@ -208,7 +208,7 @@ void nullTerminate(char* buffer, size_t bufferSize)
 * DESCRIPTION  :
 *     prints the fare sorted list
 * PARAMETERS   :
-*   struct FlightInfo* head :
+*   struct FlightInfo* head : head to start listing process with
 * RETURNS      :
 *   N/A
 */
@@ -268,6 +268,7 @@ struct FlightInfo* findFlight(struct FlightInfo* headByDestination, char* destin
     return NULL;
 }
 
+
 /*
 * METHOD       : deleteFlight
 * DESCRIPTION  :
@@ -281,21 +282,85 @@ struct FlightInfo* findFlight(struct FlightInfo* headByDestination, char* destin
 * RETURNS      :
 *   N/A
 */
-void deleteFlight(struct FlightInfo** headByFare, struct FlightInfo** tailByFare, struct FlightInfo** headByDesination, struct FlightInfo** tailByDestination, struct FlightInfo* targetFlight)
+void deleteFlight(struct FlightInfo** headByFare, struct FlightInfo** tailByFare, struct FlightInfo** headByDestination, struct FlightInfo** tailByDestination, struct FlightInfo* targetFlight)
 {
     if (targetFlight == NULL) // no match found, exit function
     {
         return;
     }
 
-    // relink fare list =========
+    // relink fare list 
     if (targetFlight->PreviousFlightByFare != NULL) // target was not head, must relink previous to next
     {
         targetFlight->PreviousFlightByFare->NextFlightByFare = targetFlight->NextFlightByFare;
     }
-    else // target was head and head must be reassigned
+    else // target was head assign new head
     {
         *headByFare = targetFlight->NextFlightByFare;
+    }
+
+    if (targetFlight->NextFlightByFare != NULL) // target was not tail, must relink next to previous
+    {
+        targetFlight->NextFlightByFare->PreviousFlightByFare = targetFlight->PreviousFlightByFare;
+    }
+    else // target was tail, assign new tail
+    {
+        *tailByFare = targetFlight->PreviousFlightByFare;
+    }
+
+    //relink destination list 
+    if (targetFlight->PreviousFlightByDestination != NULL) // target was ot head, must relink previous to next
+    {
+        targetFlight->PreviousFlightByDestination->NextFlightByDestination = targetFlight->NextFlightByDestination;
+    }
+    else // target was head assign new head
+    {
+        *headByDestination = targetFlight->NextFlightByDestination;
+    }
+
+    if (targetFlight->NextFlightByDestination != NULL) // target was not tail, must relink next to previous
+    {
+        targetFlight->NextFlightByDestination->PreviousFlightByDestination = targetFlight->PreviousFlightByDestination;
+    }
+    else // target was tail, assign new tail
+    {
+        *tailByDestination = targetFlight->PreviousFlightByDestination;
+    }
+
+    free(targetFlight); // free memory of removed flight
+
+}
+
+mutateLists(struct FlightInfo** headByFare, struct FlightInfo** tailByFare, struct FlightInfo** headByDestination, struct FlightInfo** tailByDestination, struct FlightInfo* targetFlight)
+{
+    char fareString[10];
+    double fare;
+    printf("Current Fare: $%.2f\nEnter new fare: ", targetFlight->Fare);
+    nullTerminate(fareString, sizeof(fareString));
+    if (strcmp(fareString, ".") != 0) //as long as input is not '.'
+    {
+        struct FlightInfo* temp = createNewFlight(targetFlight->Destination, targetFlight->Date, targetFlight->Fare);
+        sscanf(fareString, "%lf", &fare);
+        temp->Fare = fare;
+        deleteFlight(headByFare, tailByFare, headByDestination, tailByDestination, targetFlight);
+        insertDualSorted(headByFare, tailByFare, headByDestination, tailByDestination, temp->Destination, temp->Date, temp->Fare);
+
+    }
+    else
+    {
+        printf("Fare remains unchanged");
+    }
+}
+
+clearLists(struct FlightInfo** headByDestination)
+{
+    struct FlightInfo* current;
+    struct FlightInfo* next;
+    while (current != NULL)
+    {
+        next = current->NextFlightByDestination;
+
+
     }
 }
 
@@ -309,6 +374,8 @@ int main()
     struct FlightInfo* headByFare = NULL;
     struct FlightInfo* tailByFare = NULL;
 
+    // struct FlightInfo* targetFlight;
+
     char newDestination[15];
     char newDate[9];
     char newFareString[10]; //should hold fares up to 999999.99\0
@@ -318,15 +385,15 @@ int main()
 
     while (collectionLoop == 1)
     {
-        printf("Enter destination:");
+        printf("Enter destination: ");
         nullTerminate(newDestination, sizeof(newDestination));
 
-        
-        printf("Enter date:");
+
+        printf("Enter date: ");
         nullTerminate(newDate, sizeof(newDate));
 
-        
-        printf("Enter fare:");
+
+        printf("Enter fare: ");
         nullTerminate(newFareString, sizeof(newFareString));
 
 
@@ -352,8 +419,25 @@ int main()
     insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Quebec\0", "10212026\0", 160.67);
 
     printSortedFare(headByFare);
-
     printSortedDestination(headByDestination);
 
-    findFlight(headByDestination, newDestination, newDate);
+
+    
+
+    nullTerminate(newDestination, sizeof(newDestination));
+    nullTerminate(newDate, sizeof(newDate));
+    if (findFlight(headByDestination, newDestination, newDate) != NULL) // found
+    {
+        mutateLists(&headByFare, &tailByFare, &headByDestination, &tailByDestination, findFlight(headByDestination, newDestination, newDate));
+        //targetFlight = findFlight(headByDestination, newDestination, newDate);
+
+        //printf("Enter new fare ('.' to leave unchanged)");
+        //nullTerminate(newFareString, sizeof(newFareString));
+        //
+        //deleteFlight(headByFare, tailByFare, headByDestination, tailByDestination, findFlight(headByDestination, newDestination, newDate));
+        
+    }
+    
+    printSortedFare(headByFare);
+    printSortedDestination(headByDestination);
 }
