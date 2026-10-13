@@ -6,7 +6,7 @@
  *      This program promts the user for inupt before constructing 
  *          2 doubly linkd lists sorted by destination and fare respectivly,
  *          prints out the list sorted by fare  then destination, askes user for 
- *          a destination and date pair to change the fare of then redisplaying the lists
+ *          a destination and date pair to change the fare before then redisplaying the lists
  */
 #define _CRT_SECURE_NO_WARNINGS
 
@@ -51,7 +51,7 @@ struct FlightInfo* createNewFlight(char* destination, char* date, double fare)
         exit(EXIT_FAILURE);
     }
 
-    //
+    // assigne values 
     strcpy(newFlight->Destination, destination);
     strcpy(newFlight->Date, date);
     newFlight->Fare = fare;
@@ -186,17 +186,19 @@ void insertDualSorted(struct FlightInfo** headByFare, struct FlightInfo** tailBy
 */
 void nullTerminate(char* buffer, size_t bufferSize)
 {
+    // if the buffer is empty, get it to hold a nullterm
     if (fgets(buffer, bufferSize, stdin) == NULL)
     {
         buffer[0] = '\0';
     }
 
+    // look for newline in string
     char* newLine = strchr(buffer, '\n');
-    if (newLine != NULL)
-        {
+    if (newLine != NULL) // found new line, replacing with nullterm
+    {
         *newLine = '\0';
-        }
-    else
+    }
+    else // new line was not found (wasn't collected by fgets), empty stdin of any unhandled newlines
     {
         int charInt;
         while ((charInt = getchar()) != '\n');
@@ -214,9 +216,8 @@ void nullTerminate(char* buffer, size_t bufferSize)
 */
 void printSortedFare(struct FlightInfo* head)
 {
-    printf("\nDEBUG BY FARE\n");
     struct FlightInfo* current = head;
-    while (current != NULL)
+    while (current != NULL) // while current is not null, print its data and set current to next in list
     {
         printf("Destination: %s, Date: %s, Fare: $%.2f\n", current->Destination, current->Date, current->Fare);
         current = current->NextFlightByFare;
@@ -234,9 +235,8 @@ void printSortedFare(struct FlightInfo* head)
 */
 void printSortedDestination(struct FlightInfo* head)
 {
-    printf("\nDEBUG BY DEST\n");
     struct FlightInfo* current = head;
-    while (current != NULL)
+    while (current != NULL) // while current is not null, print its data and set current to next in list
     {
         printf("Destination: %s, Date: %s, Fare: $%.2f\n", current->Destination, current->Date, current->Fare);
         current = current->NextFlightByDestination;
@@ -257,15 +257,15 @@ void printSortedDestination(struct FlightInfo* head)
 struct FlightInfo* findFlight(struct FlightInfo* headByDestination, char* destination, char* date)
 {
     struct FlightInfo* current = headByDestination;
-    while (current != NULL)
+    while (current != NULL) // 
     {
-        if (strcmp(current->Destination, destination) == 0 && strcmp(current->Date, date) == 0) // check for both fields to match
+        if (strcmp(current->Destination, destination) == 0 && strcmp(current->Date, date) == 0) // check for both fields to match, return current if so
         {
             return current;
         }
-        current = current->NextFlightByDestination;
+        current = current->NextFlightByDestination; // move to next
     }
-    return NULL;
+    return NULL; // no match
 }
 
 
@@ -335,18 +335,21 @@ mutateLists(struct FlightInfo** headByFare, struct FlightInfo** tailByFare, stru
 {
     char fareString[10];
     double fare;
+
+    // get new fare to add
     printf("Current Fare: $%.2f\nEnter new fare: ", targetFlight->Fare);
     nullTerminate(fareString, sizeof(fareString));
-    if (strcmp(fareString, ".") != 0) //as long as input is not '.'
+    if (strcmp(fareString, ".") != 0) //as long as fare input is not '.'
     {
-        struct FlightInfo* temp = createNewFlight(targetFlight->Destination, targetFlight->Date, targetFlight->Fare);
-        sscanf(fareString, "%lf", &fare);
+        struct FlightInfo* temp = createNewFlight(targetFlight->Destination, targetFlight->Date, targetFlight->Fare); // temporary copy for data modification
+        sscanf(fareString, "%lf", &fare); //convert fareString data to double
         temp->Fare = fare;
+        // delete old flight and replace with updated version
         deleteFlight(headByFare, tailByFare, headByDestination, tailByDestination, targetFlight);
         insertDualSorted(headByFare, tailByFare, headByDestination, tailByDestination, temp->Destination, temp->Date, temp->Fare);
 
     }
-    else
+    else // no change will be made
     {
         printf("Fare remains unchanged");
     }
@@ -354,14 +357,23 @@ mutateLists(struct FlightInfo** headByFare, struct FlightInfo** tailByFare, stru
 
 clearLists(struct FlightInfo** headByDestination)
 {
+
+    // structs to hold current and next flights
     struct FlightInfo* current;
     struct FlightInfo* next;
+    current = *headByDestination;
+
     while (current != NULL)
     {
-        next = current->NextFlightByDestination;
+        next = current->NextFlightByDestination; //store the next flight in list before freeing the current one
 
+        free(current); 
+
+        current = next; //set current to next
 
     }
+    *headByDestination = NULL; // ensure the head pointer is NULL
+
 }
 
 int main()
@@ -385,6 +397,7 @@ int main()
 
     while (collectionLoop == 1)
     {
+        // get user inputs
         printf("Enter destination: ");
         nullTerminate(newDestination, sizeof(newDestination));
 
@@ -395,9 +408,6 @@ int main()
 
         printf("Enter fare: ");
         nullTerminate(newFareString, sizeof(newFareString));
-
-
-        printf("DEBUG: %s, %s, %s\n", newDestination, newDate, newFareString);
 
         // if dest and fare are not ".", insert into list
         if (strcmp(newDestination, ".") != 0 && strcmp(newFareString, ".") != 0)
@@ -412,32 +422,29 @@ int main()
         }
     }
 
-    insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Kitchener\0", "10212026\0", 356.67);
-    insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Bancroft\0", "10212026\0", 350.00);
-    insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Ottowa\0", "10212026\0", 246.93);
-    insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Toronto\0", "10212026\0", 496.67);
-    insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Quebec\0", "10212026\0", 160.67);
+    // THERE ARE HERE TO SPEED UP TESTING OF CODE, UNCOMMENT TO ADD 5 FLIGHTS TO LIST IN ADDITION TO USER INPUT
+    //insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Kitchener\0", "20022026\0", 356.67);
+    //insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Bancroft\0", "16012026\0", 350.00);
+    //insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Ottawa\0", "01212026\0", 246.93);
+    //insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Toronto\0", "01272027\0", 496.67);
+    //insertDualSorted(&headByFare, &tailByFare, &headByDestination, &tailByDestination, "Quebec\0", "05232027\0", 160.67);
 
     printSortedFare(headByFare);
+    printf("\n");
     printSortedDestination(headByDestination);
 
-
-    
-
+    printf("Enter distination to search: ");
     nullTerminate(newDestination, sizeof(newDestination));
+    printf("Enter date to search: ");
     nullTerminate(newDate, sizeof(newDate));
-    if (findFlight(headByDestination, newDestination, newDate) != NULL) // found
+    if (findFlight(headByDestination, newDestination, newDate) != NULL) // found a matching flight
     {
         mutateLists(&headByFare, &tailByFare, &headByDestination, &tailByDestination, findFlight(headByDestination, newDestination, newDate));
-        //targetFlight = findFlight(headByDestination, newDestination, newDate);
-
-        //printf("Enter new fare ('.' to leave unchanged)");
-        //nullTerminate(newFareString, sizeof(newFareString));
-        //
-        //deleteFlight(headByFare, tailByFare, headByDestination, tailByDestination, findFlight(headByDestination, newDestination, newDate));
-        
     }
     
     printSortedFare(headByFare);
+    printf("\n");
     printSortedDestination(headByDestination);
+
+    clearLists(&headByDestination);
 }
